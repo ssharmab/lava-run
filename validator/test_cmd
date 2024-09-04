@@ -1,0 +1,1 @@
+sudo ./lava-run --job-id 0 --output-dir /home/ssharma/Downloads --device local-machine.yaml job-local.yaml
