@@ -1,0 +1,262 @@
+
+
+constants:
+
+  # POSIX os (not AOSP)
+  posix:
+    lava_test_sh_cmd: /bin/sh
+    lava_test_results_dir: /lava-%s
+    lava_test_shell_file: ~/.bashrc
+
+  # bootloader specific
+  barebox:
+    interrupt-prompt: 'Hit m for menu or any other key to stop autoboot'
+    interrupt-character: '
+'
+    final-message: 'Starting kernel'
+    error-messages:
+      - '### ERROR ### Please RESET the board ###'
+      - 'ERROR: .*'
+      - '.*: Out of memory'
+  u-boot:
+    interrupt-prompt: 'Hit any key to stop autoboot'
+    interrupt-character: ' '
+    interrupt_ctrl_list: []
+    interrupt-newline: True
+    final-message: 'Starting kernel'
+    error-messages:
+      - 'Resetting CPU'
+      - 'Must RESET board to recover'
+      - 'TIMEOUT'
+      - 'Retry count exceeded'
+      - 'Retry time exceeded; starting again'
+      - 'ERROR: The remote end did not respond in time.'
+      - 'File not found'
+      - 'Bad Linux ARM64 Image magic!'
+      - 'Wrong Ramdisk Image Format'
+      - 'Ramdisk image is corrupt or invalid'
+      - 'ERROR: Failed to allocate'
+      - 'TFTP error: trying to overwrite reserved memory'
+      - 'Bad Linux RISCV Image magic!'
+      - 'Wrong Image Format for boot'
+      - 'ERROR: Did not find a cmdline Flattened Device Tree'
+      - 'ERROR: RD image overlaps OS image'
+    dfu-download: 'DOWNLOAD \.\.\. OK\r\nCtrl\+C to exit \.\.\.'
+  grub:
+    interrupt-prompt: 'for a command-line'
+    interrupt-character: 'c'
+    interrupt-newline: False
+    error-messages:
+      - "error: missing (.*) symbol."
+  grub-efi:
+    interrupt-prompt: 'for a command-line'
+    interrupt-character: 'c'
+    error-messages:
+      - 'Undefined OpCode Exception PC at'
+      - 'Synchronous Exception at'
+      - "error: missing (.*) symbol."
+  ipxe:
+    interrupt-prompt: 'Press Ctrl-B for the iPXE command line'
+    interrupt_ctrl_list: ['b']
+    error-messages:
+      - 'No configuration methods succeeded'
+      - 'Connection timed out'
+  depthcharge:
+    final-message: 'Starting kernel'
+    error-messages:
+      - 'Tftp failed.'
+      - 'Dhcp release failed.'
+      - 'No space left for ramdisk'
+      - 'TFTP failed for ramdisk.'
+      - 'Dhcp release failed.'
+      - 'Out of space adding TFTP server IP to the command line.'
+      - 'No network device.'
+      - 'Error code \d+( \([\w\s]+\))?\r\n'
+  # OS shutdown message
+  # Override: set as the shutdown-message parameter of an Action.
+  # SHUTDOWN_MESSAGE
+  shutdown-message: 'The system is going down for reboot NOW'
+
+  # Kernel starting message
+  kernel-start-message: 'Linux version [0-9]'
+
+  # Default shell prompt for AutoLogin
+  # DEFAULT_SHELL_PROMPT
+  default-shell-prompt: 'lava-test: # '
+
+  # pexpect.spawn maxread
+  # SPAWN_MAXREAD - in bytes, quoted as a string
+  # 1 to turn off buffering, pexpect default is 2000
+  # maximum may be limited by platform issues to 4092
+  # avoid setting searchwindowsize:
+  # Data before searchwindowsize point is preserved, but not searched.
+  spawn_maxread: '4092'
+
+  # Set the failure retry to default or override it
+  failure_retry: 1
+  # Override boot_retry
+  boot_retry: 
+parameters:
+  # interfaces or device_ip or device_mac
+
+  pass: # sata_uuid_sd_uuid_usb_uuid
+
+
+
+available_architectures:
+- arm64
+- arm
+- aarch64
+- amd64
+- x86_64
+- hppa
+- i386
+- mips
+- mipsel
+- mips64
+- nios2
+- ppc
+- ppc64
+- riscv64
+- sparc
+- sparc64
+- alpha
+- cris
+- lm32
+- m68k
+- microblaze
+- microblazeel
+- moxie
+- or32
+- s390x
+- sh4
+- sh4eb
+- tricore
+- unicore32
+- xtensa
+- xtensaeb
+
+actions:
+  deploy:
+    connections:
+      serial:
+      lxc:
+    methods:
+      nfs:
+      lxc:
+      image:
+        parameters:
+          guest:
+            size: 512  # in Mb
+            interface: ide
+            driveid: lavatest
+  boot:
+    connections:
+      serial:
+      ssh:
+      lxc:
+    methods:
+      minimal:
+      qemu:
+        parameters:
+          command:
+            qemu-system-
+          # used by installers to relate to the empty target device
+          boot_options:
+            {root: /dev/sda1, console: ttyS0,115200,
+             boot_order: c}
+          options:
+          - -cpu host
+          - -enable-kvm
+          - -nographic
+          - -net nic,model=virtio,macaddr=52:54:00:9e:69:5f -net user
+          - -m 2048
+          - -monitor none
+      qemu-nfs:
+        parameters:
+          command:
+            qemu-system-
+          # used by installers to relate to the empty target device
+          boot_options:
+            {root: /dev/sda1, console: ttyS0,115200,
+             boot_order: c}
+          options:
+          - -cpu host
+          - -enable-kvm
+          - -nographic
+          - -net nic,model=virtio,macaddr=52:54:00:9e:69:5f -net user
+          - -m 2048
+          - -monitor none
+
+          append:
+            console: ttyAMA0
+            root: /dev/nfs
+            nfsrootargs: nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard
+            ipargs: ip=dhcp
+timeouts:
+  actions:
+    apply-overlay-image:
+      minutes: 2
+    dd-image:
+      minutes: 10
+    download-retry:
+      minutes: 5
+    http-download:
+      minutes: 5
+    lava-test-shell:
+      minutes: 3
+    nfs-deploy:
+      minutes: 10
+    power-off:
+      seconds: 10
+    bootloader-commands:
+      minutes: 3
+    bootloader-interrupt:
+      seconds: 30
+    u-boot-interrupt:
+      seconds: 30
+    umount-retry:
+      seconds: 45
+    auto-login-action:
+      minutes: 2
+    bootloader-action:
+      minutes: 3
+    uboot-action:
+      minutes: 3
+    uboot-commands:
+      minutes: 3
+    bootloader-retry:
+      minutes: 3
+    boot-qemu-image:
+      minutes: 2
+    boot-image-retry:
+      minutes: 2
+    flash-uboot-ums:
+      minutes: 20
+    musca-deploy:
+      minutes: 3
+    musca-boot:
+      minutes: 1
+    unmount-musca-usbmsd:
+      seconds: 30
+    pdu-reboot:
+      seconds: 30
+    reset-device:
+      seconds: 30
+  connections:
+    dd-image:
+      minutes: 10
+    uboot-commands:
+      seconds: 30
+    bootloader-commands:
+      seconds: 30
+    auto-login-action:
+      minutes: 2
+    bootloader-interrupt:
+      seconds: 30
+    u-boot-interrupt:
+      seconds: 30
+    lava-test-shell:
+      seconds: 10
+    lava-docker-test-shell:
+      seconds: 10
