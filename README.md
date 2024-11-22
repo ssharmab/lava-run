@@ -1,2 +1,4 @@
 # lava-run
-A fork of part of the lava (linaro validation framework) for the command line.
+
+This is a certification suite for elxr.
+This is based on the linaro tests for linux.

@@ -13,19 +13,45 @@ import os
 import signal
 import sys
 import traceback
+import yaml
+import re
 from pathlib import Path
-
-from setproctitle import setproctitle
+from prettytable import PrettyTable
+#from setproctitle import setproctitle
 
 from lava_common.exceptions import InfrastructureError, JobCanceled, LAVABug, LAVAError
 from lava_common.log import YAMLLogger
 from lava_common.yaml import yaml_safe_dump
+from lava_common.yaml import yaml_safe_load
 from lava_dispatcher.device import NewDevice
 from lava_dispatcher.parser import JobParser
 
+results = []
+
+class ResultsFilter(logging.Filter):
+    """
+    A log filter which only returns lava results
+    """
+    def filter(self, record):
+        msg = yaml_safe_load(record.msg)
+        return msg['lvl'] == "results"
+
+class ResultsHandler(logging.Handler):
+    """
+    A results log handler which takes lava test results and appends them to a results array
+    """
+    def __init__(self, level=logging.INFO, results = []):
+        super().__init__(level)
+        self._results = results
+        self.addFilter(ResultsFilter(__file__))
+
+    def emit(self, record):
+        record_msg = yaml_safe_load(record.msg)
+        result = record_msg['msg']
+        self._results.append(result)
+
 
 def parser():
-    """Configure the parser"""
     p_obj = argparse.ArgumentParser()
 
     p_obj.add_argument(
@@ -102,9 +128,10 @@ def setup_logger(options):
     # Pipeline always log as YAML so change the base logger.
     # Every calls to logging.getLogger will now return a YAMLLogger
     logging.setLoggerClass(YAMLLogger)
-
+    logging.basicConfig(level=logging.DEBUG)
     # The logger can be used by the parser and the Job object in all phases.
     logger = logging.getLogger("dispatcher")
+
     if options.url is not None:
         logger.addHTTPHandler(
             f"{options.url}/scheduler/internal/v1/jobs/{options.job_id}/logs/",
@@ -112,7 +139,8 @@ def setup_logger(options):
             options.job_log_interval,
         )
     else:
-        logger.addHandler(logging.StreamHandler())
+        print("Adding ResultsHandler")
+        logger.addHandler(ResultsHandler(results=results))
 
     return logger
 
@@ -179,7 +207,7 @@ def main():
         return 1
 
     # Set process title for easier debugging
-    setproctitle("lava-run [job: %s]" % options.job_id)
+#    setproctitle("lava-run [job: %s]" % options.job_id)
 
     # Setup the logger as early as possible
     logger = setup_logger(options)
@@ -260,6 +288,22 @@ def main():
     (options.output_dir / "result.yaml").write_text(
         yaml_safe_dump(result_dict), encoding="utf-8"
     )
+
+    table = PrettyTable()
+    summary = PrettyTable()
+    table.field_names = ['Definition','Case','result','starttc','endtc']
+    summary.field_names = ['Definition','Case','result','duration']
+
+    for element in results:
+        if re.match(r"(\d+)_*",element['case']):
+            summary.add_row([element['case'],element['definition'],element['result'],element['duration']])
+    print(summary)
+
+    for element in results:
+        if element['definition'] != 'lava':
+            table.add_row([element['case'],element['definition'],element['result'],element['starttc'],element['endtc']])
+
+    print(table)
 
     return 0 if success else 1
 
