@@ -46,20 +46,12 @@ actions:
       name: smoke-tests
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
-      path: automated/linux/device-tree/device-tree.yaml
-      name: device-tree
-    - repository: https://github.com/ssharmab/lava-tests.git
-      from: git
       path: automated/linux/ethernet/ethernet.yaml
       name: ethernet
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
       path: automated/linux/fdisk/fdisk.yaml
       name: fdisk
-    - repository: https://github.com/ssharmab/lava-tests.git
-      from: git
-      path: automated/linux/fs-resize/fs-resize.yaml
-      name: fs-resize
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
       path: automated/linux/gpiod/gpiod.yaml
@@ -76,10 +68,6 @@ actions:
       from: git
       path: automated/linux/libhugetlbfs/libhugetlbfs.yaml
       name: libhugetlbfs
-    - repository: https://github.com/ssharmab/lava-tests.git
-      from: git
-      path: automated/linux/modules/modules.yaml
-      name: modules
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
       path: automated/linux/network-basic/network-basic.yaml
