@@ -94,8 +94,8 @@ actions:
       name: network-basic
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
-      path: automated/linux/openssl/openssl.yaml
-      name: openssl
+      path: automated/linux/openssl/openssl-speed.yaml
+      name: openssl-speed
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
       path: automated/linux/perf-bench/perf-bench.yaml
