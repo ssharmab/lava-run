@@ -1,0 +1,114 @@
+# Your first LAVA JOB definition for an x86_64 QEMU
+device_type: this
+job_name: test pipeline, first job
+
+timeouts:
+  job:
+    minutes: 15
+  action:
+    minutes: 5
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+context:
+  arch: amd64
+
+
+# ACTION_BLOCK
+actions:
+
+- deploy:
+    to: overlay
+    overlays:
+      lava:
+        path: /tmp/lava
+
+- boot:
+    connection: serial
+    method: minimal
+    prompts:
+    - ".*[a-zA-Z0-9_]+@.*# $"
+    transfer_overlay:
+      transfer_method: nfs
+      download_command: bash -c 'cp -r ${0#*:}/* $1/'
+      unpack_command: cp -rf
+    reset: false
+
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/boottime/boottime.yaml
+      name: boottime
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/busybox/busybox.yaml
+      name: busybox
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/crypto/cryptsetup.yaml
+      name: cryptsetup 
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/crypto/crypto.yaml
+      name: crypto
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
+      name: dd-wr-speed
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/ethernet/ethernet.yaml
+      name: ethernet
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/fio-test/fio-test.yaml
+      name: fio-test 
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/kselftest/kselftest.yaml
+      name: kselftest 
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/lamp/lamp.yaml
+      name: lamp
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/lshw/lshw.yaml
+      name: lshw
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/memino/meminfo.yaml
+      name: meminfo
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/memory-usage/memory-usage.yaml
+      name: memory-usage
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/network-basic/network-basic.yaml
+      name: network-basic
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/openssl/openssl.yaml
+      name: openssl
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/perf-bench/perf-bench.yaml
+      name: perf-bench
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/smoke/smoke.yaml
+      name: smoke
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/toolchain-smoke/toolchain-smoke.yaml
+      name: toolchain-smoke
+    - repository: https://github.com/ssharmab/lava-tests.git
+      from: git
+      path: automated/linux/usb-smoke/usb-smoke.yaml
+      name: usb-smoke
