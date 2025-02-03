@@ -82,7 +82,7 @@ actions:
       name: lshw
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
-      path: automated/linux/memino/meminfo.yaml
+      path: automated/linux/meminfo/meminfo.yaml
       name: meminfo
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
