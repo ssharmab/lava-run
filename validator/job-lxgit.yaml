@@ -110,5 +110,5 @@ actions:
       name: toolchain-smoke
     - repository: https://github.com/ssharmab/lava-tests.git
       from: git
-      path: automated/linux/usb-smoke/usb-smoke.yaml
-      name: usb-smoke
+      path: automated/linux/usb-smoke/usb-smoke-test.yaml
+      name: usb-smoke-test
